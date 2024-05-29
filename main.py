@@ -7,16 +7,20 @@ from PIL import Image
 class DataReader:
 
     def read_file(self, filename):
-        data = np.genfromtxt(filename, delimiter=';', dtype=None)
+        data = np.genfromtxt(filename, encoding=None, delimiter=';', dtype=None)
         # print([len(line) for line in data])
         # print(len(data))
-        print(data[0])     
+        print(data[0])
         return data
 
     def create_image(self, raw_data):
-        img = Image.fromarray(raw_data)
-        img.save('test.png')
-        img.show()
+        height = len(raw_data)
+        width = len(raw_data[0])
+        img = Image.new('L', (width, height))
+        img.putdata(list(raw_data.flat))
+        # img = Image.fromarray(raw_data)
+        img.save('grayscale_test.png')
+        # img.show()
 
     def create_color_image(self, raw_data):
         height = len(raw_data)
@@ -32,19 +36,20 @@ class DataReader:
         img.putdata(pixels)
         img.save('test.bmp')
         # img = Image.fromarray(raw_data, mode='RGB')
-        # img.show()
+        img.show()
 
 
 def main():
-    # FILENAME = './task/attached_data/for_main_task/atom.csv'
-    FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
+    FILENAME = './task/attached_data/for_main_task/atom.csv'
+    # FILENAME = './task/attached_data/for_main_task/beam.csv'
+    # FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
     # FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
 
     dr = DataReader()
     raw_data = dr.read_file(FILENAME)
-    # dr.create_image(raw_data)
-    dr.create_color_image(raw_data)
+    dr.create_image(raw_data)
+    # dr.create_color_image(raw_data)
 
 if __name__ == '__main__':
     main()

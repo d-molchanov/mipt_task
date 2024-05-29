@@ -15,6 +15,7 @@ class DataReader:
 
     def create_image(self, raw_data):
         img = Image.fromarray(raw_data)
+        img.save('test.png')
         img.show()
 
     def create_color_image(self, raw_data):
@@ -29,8 +30,9 @@ class DataReader:
                 pixels.append((red, green, blue))
         img = Image.new('RGB', (width, height))
         img.putdata(pixels)
+        img.save('test.bmp')
         # img = Image.fromarray(raw_data, mode='RGB')
-        img.show()
+        # img.show()
 
 
 def main():

@@ -75,7 +75,7 @@ class ChildWindow(QMainWindow):
     def load_image(self, filename):
         pixmap = QPixmap(filename)
         # scaled = pixmap.scaled(QSize(pixmap.width()//2, pixmap.height()//2))
-        scaled = pixmap.scaled(QSize(pixmap.width()*2, pixmap.height()*2))
+        scaled = pixmap.scaled(QSize(pixmap.width()//2, pixmap.height()//2))
         self.label.setPixmap(scaled)
         # self.label.resize(600, 600)
 
@@ -143,8 +143,12 @@ class MainWindow(QMainWindow):
 
     def showDialog(self):
 
-        fnames = QFileDialog.getOpenFileNames(self, 'Open file', '/')[0]
+        fnames = QFileDialog.getOpenFileNames(self, 'Open file', '.')[0]
         self.textEdit.setText('\n'.join(fnames))
+        for f in fnames:
+            child_window = ChildWindow()
+            child_window.load_image(f)
+            self.windows.append(child_window)
         # f = open(fname, 'r')
 
         # with f:

@@ -15,6 +15,7 @@ from PyQt6.QtWidgets import QScrollArea
 from PyQt6.QtGui import QAction, QIcon, QPixmap
 from PyQt6.QtCore import Qt, QSize
 
+
 class Widget(QWidget):
     def __init__(self, page):
         super().__init__()
@@ -35,10 +36,11 @@ class ChildWindow(QMainWindow):
 
     def initUI(self):
         self.label = QLabel()
+
         self.area = QScrollArea()
         self.area.setWidgetResizable(True)
-        self.area.setWidget(self.label)
-        self.button = QPushButton('Hello!')
+        # self.area.setWidget(self.label)
+        self.button = QPushButton('Save as')
         self.plus_button = QPushButton('+')
         self.plus_button.setFixedSize(QSize(24, 24))
         self.minus_button = QPushButton('-')
@@ -50,7 +52,7 @@ class ChildWindow(QMainWindow):
         hbox.addWidget(self.plus_button)
         hbox.addWidget(self.minus_button)
         # self.button.resize(100, 100)
-        self.button.clicked.connect(self.greet)
+        self.button.clicked.connect(self.saveFileDialog)
         
         layout = QVBoxLayout()
         layout.addWidget(self.area)
@@ -61,7 +63,7 @@ class ChildWindow(QMainWindow):
 
         self.setCentralWidget(container)
 
-        self.setGeometry(300, 300, 350, 300)
+        self.setGeometry(100, 100, 600, 400)
         # self.setMinimumSize(200, 200)
         # self.setMaximumSize(800, 800)
         self.setWindowTitle('Hello!')
@@ -73,10 +75,23 @@ class ChildWindow(QMainWindow):
         self.load_image('grayscale_test.png')
 
     def load_image(self, filename):
+        self.filename = filename
         pixmap = QPixmap(filename)
         # scaled = pixmap.scaled(QSize(pixmap.width()//2, pixmap.height()//2))
-        scaled = pixmap.scaled(QSize(pixmap.width()//2, pixmap.height()//2))
+        scaled = pixmap.scaled(QSize(pixmap.width()*2, pixmap.height()*2))
         self.label.setPixmap(scaled)
+        self.area.setWidget(self.label)
+        self.setWindowTitle(filename)
+
+    def saveFileDialog(self):
+        # dialog = QFileDialog()
+        # dialog.setNameFilter('*.png, *.jpg, *.bmp')
+        # dialog.exec()
+        # filename = dialog.getSaveFileName(self, 'Save file', '*.png, *.jpg, *.bmp')
+        # filename = QFileDialog.getSaveFileName(self, 'Save file', self.filename, 'Images (*.png, *.jpg, *.bmp)')
+        filename, ext = QFileDialog.getSaveFileName(self, 'Save file', '.', '*.png;;*.jpg;;*.bmp')
+
+        print(f'{filename}.{ext[2:]}')
         # self.label.resize(600, 600)
 
 
@@ -158,6 +173,8 @@ class MainWindow(QMainWindow):
         # with f:
         #     data = f.read()
         #     self.textEdit.setText(data)
+
+
 
     def create_window(self):
         child_window = ChildWindow()

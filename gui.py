@@ -126,6 +126,10 @@ class MainWindow(QMainWindow):
         layout.addWidget(self.tabs)
         layout.addWidget(self.form_button)
 
+        self.open_button = QPushButton('Open file(s)')
+        self.open_button.clicked.connect(self.showDialog)
+        layout.addWidget(self.open_button)
+
         container = QWidget()
         container.setLayout(layout)
 

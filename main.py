@@ -3,11 +3,12 @@ from PyQt6.QtWidgets import QApplication
 from gui import MainWindow
 
 
-def main():
+def main() -> None:
     app = QApplication(sys.argv)
     main_window = MainWindow()
     main_window.show()
-    sys.exit(app.exec())    
+    sys.exit(app.exec())
+
 
 if __name__ == '__main__':
     main()

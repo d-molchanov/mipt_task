@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QLabel
 from PyQt6.QtWidgets import QTextEdit
 from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtWidgets import QFileDialog
+from PyQt6.QtWidgets import QTabWidget
 
 
 from PyQt6.QtGui import QAction, QIcon
@@ -40,9 +41,17 @@ class MainWindow(QMainWindow):
         fileMenu = menubar.addMenu('&File')
         fileMenu.addAction(openFile)
 
+        self.tabs = QTabWidget()
+        self.tabs.addTab(QWidget(), 'First tab')
+        self.tabs.addTab(QWidget(), 'Second tab')
+        self.tabs.addTab(QWidget(), 'Third tab')
+        # self.tabs.setTabPosition(QTabWidget.West)
+        self.tabs.setMovable(True)
+
         layout.addWidget(self.button)
         layout.addWidget(self.label)
         layout.addWidget(self.textEdit)
+        layout.addWidget(self.tabs)
 
         container = QWidget()
         container.setLayout(layout)

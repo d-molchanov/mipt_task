@@ -1,9 +1,9 @@
-from typing import List, Tuple, Dict, Optional, Union
+from typing import Optional
 
 import numpy as np
 
 from PIL import Image
-
+from PIL.Image import Image as PilImage
 
 
 class ImageMaker:
@@ -12,7 +12,7 @@ class ImageMaker:
         try:
             with open(filename, 'r') as f:
                 data = np.genfromtxt(
-                    f, delimiter=';', dtype=None, encoding=None 
+                    f, delimiter=';', dtype=None, encoding=None
                 )
                 return data
         except FileNotFoundError:
@@ -23,14 +23,14 @@ class ImageMaker:
             print(f'Error with reading file {filename}: {e}')
         return data
 
-    def create_grayscale_image(self, data: np.ndarray) -> Image:
+    def create_grayscale_image(self, data: np.ndarray) -> PilImage:
         height = len(data)
         width = len(data[0])
         image = Image.new('L', (width, height))
         image.putdata(list(data.flat))
         return image
 
-    def create_color_image(self, data: np.ndarray) -> Image:
+    def create_color_image(self, data: np.ndarray) -> PilImage:
         height = len(data)
         width = len(data[0])
         pixels = []
@@ -44,7 +44,7 @@ class ImageMaker:
         image.putdata(pixels)
         return image
 
-    def create_image(self, data: np.ndarray, format_: str) -> Optional[Image]:
+    def create_image(self, data: np.ndarray, format_: str) -> Optional[PilImage]:
         height = len(data)
         width = len(data[0])
         pixels = []
@@ -61,9 +61,9 @@ class ImageMaker:
             return None
         image = Image.new(format_, (width, height))
         image.putdata(pixels)
-        return image 
+        return image
 
-    def save_image(self, image: Image, filename: str) -> None:
+    def save_image(self, image: PilImage, filename: str) -> None:
         try:
             image.save(filename)
         except ValueError:
@@ -73,6 +73,7 @@ class ImageMaker:
         # img = Image.fromarray(raw_data)
         # img.save('grayscale_test.png')
         # img.show()
+
 
 def main():
     FILENAME = './task/attached_data/for_main_task/atom.csv'
@@ -91,6 +92,7 @@ def main():
     image_maker.save_image(image, 'grayscale_test.png')
     # image.show()
     print(raw_data[0])
+
 
 if __name__ == '__main__':
     main()

@@ -1,6 +1,7 @@
 from typing import Optional
 
 import numpy as np
+import pandas as pd
 
 from PIL import Image
 from PIL.Image import Image as PilImage
@@ -11,16 +12,19 @@ class ImageMaker:
         data = None
         try:
             with open(filename, 'r') as f:
-                data = np.genfromtxt(
-                    f, delimiter=';', dtype=None, encoding=None
-                )
-                return data
+                # data = np.genfromtxt(
+                #     f, delimiter=';', dtype=None, encoding=None
+                # )
+                df = pd.read_csv(filename, sep=';', header=None)
+                data = df.values
+                print(type(data))
         except FileNotFoundError:
             print(f'File not found: {filename}')
         except PermissionError:
             print(f'Permission denied: {filename}')
         except Exception as e:
             print(f'Error with reading file {filename}: {e}')
+        print('File was read.')
         return data
 
     def create_grayscale_image(self, data: np.ndarray) -> PilImage:
@@ -76,12 +80,12 @@ class ImageMaker:
 
 
 def main():
-    FILENAME = './task/attached_data/for_main_task/atom.csv'
+    # FILENAME = './task/attached_data/for_main_task/atom.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
     # FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
     # FILENAME = './task/attached_data/for_extra_task/beam_rgb.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
-    # FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
+    FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
 
     image_maker = ImageMaker()
     raw_data = image_maker.read_file(FILENAME)
@@ -89,7 +93,7 @@ def main():
     # image = image_maker.create_color_image(raw_data)
     image = image_maker.create_image(raw_data, 'L')
 
-    image_maker.save_image(image, 'grayscale_test.png')
+    image_maker.save_image(image, 'grayscale_test_big.png')
     # image.show()
     print(raw_data[0])
 

@@ -1,20 +1,7 @@
 import sys
 from PyQt6.QtWidgets import QApplication
 from PyQt6.QtWidgets import QMainWindow
-from PyQt6.QtWidgets import QVBoxLayout
-from PyQt6.QtWidgets import QHBoxLayout
-from PyQt6.QtWidgets import QWidget
-from PyQt6.QtWidgets import QLabel
-from PyQt6.QtWidgets import QTextEdit
-from PyQt6.QtWidgets import QLineEdit
-from PyQt6.QtWidgets import QPushButton
 from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtWidgets import QTabWidget
-from PyQt6.QtWidgets import QScrollArea
-from PyQt6.QtWidgets import QCheckBox
-
-from PyQt6.QtGui import QAction, QIcon, QPixmap, QGuiApplication
-from PyQt6.QtCore import Qt, QSize
 
 from main_window_design import MainWindowDesign
 from child_window import ChildWindow
@@ -34,11 +21,11 @@ class MainWindow(QMainWindow, MainWindowDesign):
         self.child_windows.append(child_window)
 
     def show_open_dialog(self):
-
         filenames = QFileDialog.getOpenFileNames(self, 'Open file', '.')[0]
         for f in filenames:
             child_window = ChildWindow()
             child_window.load_image(f)
+            child_window.show()
             self.child_windows.append(child_window)
 
     def test(self):

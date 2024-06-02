@@ -33,20 +33,20 @@ class ChildWindowDesign(object):
         self.minus_button = QPushButton('-')
         self.minus_button.setFixedSize(QSize(24, 24))
 
-        self.text_edit = QLineEdit(self)
-        self.text_edit.setFixedWidth(42)
+        self.scale_edit = QLineEdit(self)
+        self.scale_edit.setFixedWidth(42)
         self.persentage = QLabel(self, text='%')
 
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.button)
-        hbox.addWidget(self.minus_button)
-        hbox.addWidget(self.text_edit)
-        hbox.addWidget(self.persentage)
-        hbox.addWidget(self.plus_button)
-        hbox.addStretch(1)
+        self.hbox = QHBoxLayout()
+        self.hbox.addWidget(self.button)
+        self.hbox.addWidget(self.minus_button)
+        self.hbox.addWidget(self.scale_edit)
+        self.hbox.addWidget(self.persentage)
+        self.hbox.addWidget(self.plus_button)
+        self.hbox.addStretch(1)
         
         layout = QVBoxLayout()
-        layout.addLayout(hbox)
+        layout.addLayout(self.hbox)
         layout.addWidget(self.area)
         layout.addWidget(self.label)
         container = QWidget()
@@ -55,4 +55,4 @@ class ChildWindowDesign(object):
         self.setCentralWidget(container)
 
         
-        self.show()
+        # self.show()

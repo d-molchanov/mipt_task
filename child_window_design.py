@@ -1,21 +1,12 @@
-import sys
-from PyQt6.QtWidgets import QApplication
-from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QWidget
 from PyQt6.QtWidgets import QLabel
-from PyQt6.QtWidgets import QTextEdit
 from PyQt6.QtWidgets import QLineEdit
 from PyQt6.QtWidgets import QPushButton
-from PyQt6.QtWidgets import QFileDialog
-from PyQt6.QtWidgets import QTabWidget
 from PyQt6.QtWidgets import QScrollArea
-from PyQt6.QtWidgets import QCheckBox
 
-
-from PyQt6.QtGui import QAction, QIcon, QPixmap, QGuiApplication
-from PyQt6.QtCore import Qt, QSize
+from PyQt6.QtCore import Qt
 
 class ChildWindowDesign(object):
 
@@ -33,7 +24,7 @@ class ChildWindowDesign(object):
         )
         self.scale_edit.setFixedWidth(42)
         self.increase_scale_button = QPushButton('+', self)
-        self.increase_scale_button.setFixedSize(QSize(24, 24))
+        self.increase_scale_button.setFixedSize(24, 24)
         self.load_colormap_button = QPushButton('Load colormap', self)
         self.load_colormap_button.setVisible(False)
 

@@ -1,4 +1,3 @@
-from PyQt6.QtWidgets import QMainWindow
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QWidget

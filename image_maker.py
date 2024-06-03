@@ -8,14 +8,33 @@ from PIL.Image import Image as PilImage
 
 
 class ImageMaker:
+    def get_file_metadata(self, filename: str) -> Optional[str]:
+        try:
+            with open(filename, 'r') as f:
+                try:
+                    hash_symbol, file_type = f.readline().split()
+                except ValueError:
+                    return {'file_type': 'grayscale', 'header': 0}
+                if hash_symbol != '#':
+                    return {'file_type': 'grayscale', 'header': 0}
+                if file_type in {'grayscale', 'rgb'}:
+                    return {'file_type': file_type, 'header': 1}
+        except FileNotFoundError:
+            print(f'File not found: {filename}')
+        except PermissionError:
+            print(f'Permission denied: {filename}')
+        except Exception as e:
+            print(f'Error with reading file {filename}: {e}')
+
     def read_file(self, filename: str) -> Optional[np.ndarray]:
         data = None
+        file_metadata = self.get_file_metadata(filename)
         try:
             with open(filename, 'r') as f:
                 # data = np.genfromtxt(
                 #     f, delimiter=';', dtype=None, encoding=None
                 # )
-                df = pd.read_csv(filename, sep=';', header=None)
+                df = pd.read_csv(filename, sep=';', header=file_metadata['header'])
                 data = df.values
         except FileNotFoundError:
             print(f'File not found: {filename}')
@@ -116,30 +135,33 @@ class ImageMaker:
 def main():
     # FILENAME = './task/attached_data/for_main_task/atom.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
-    # FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
+    # FILENAME = './task/attached_data/for_extra_task/atom_grayscale.csv'
+    FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
     # FILENAME = './task/attached_data/for_extra_task/beam_rgb.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
-    FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
+    # FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
 
     COLORMAP_FILENAME = './task/attached_data/colormap/CET-R1.csv'
 
     image_maker = ImageMaker()
+    print(image_maker.get_file_metadata(FILENAME))
     raw_data = image_maker.read_file(FILENAME)
     raw_colormap_data = image_maker.read_file_new(COLORMAP_FILENAME, ',')
     print(raw_colormap_data[0])
-    # color_image = image_maker.apply_colormap_new(raw_data, raw_colormap_data)
-    # image_maker.save_image(color_image, 'colormap_beam.png')
-
-    image = image_maker.create_grayscale_image_new(raw_data)
-    # image = image_maker.create_color_image(raw_data)
-    # image = image_maker.create_image(raw_data, 'L')
-
-    image_maker.save_image(image, 'grayscale_test_big.png')
-    # image.show()
     print(raw_data[0])
-    # print(raw_colormap_data[0])
-    # print(len(raw_colormap_data[0]))
-    # print(type(raw_colormap_data[0]))
+    # # color_image = image_maker.apply_colormap_new(raw_data, raw_colormap_data)
+    # # image_maker.save_image(color_image, 'colormap_beam.png')
+
+    # image = image_maker.create_grayscale_image_new(raw_data)
+    # # image = image_maker.create_color_image(raw_data)
+    # # image = image_maker.create_image(raw_data, 'L')
+
+    # image_maker.save_image(image, 'grayscale_test_big.png')
+    # # image.show()
+    # print(raw_data[0])
+    # # print(raw_colormap_data[0])
+    # # print(len(raw_colormap_data[0]))
+    # # print(type(raw_colormap_data[0]))
 
 
 if __name__ == '__main__':

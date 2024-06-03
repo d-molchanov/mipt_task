@@ -25,14 +25,17 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         super().__init__()
 
         scale_step = 0.25
-        self.plus_button.clicked.connect(
+        self.slideshow_interval = 1000
+        self.increase_scale_button.clicked.connect(
             lambda: self.change_scale(scale_step)
         )
-        self.minus_button.clicked.connect(
+        self.decrease_scale_button.clicked.connect(
             lambda: self.change_scale(-scale_step)
         )
         self.scale_edit.editingFinished.connect(self.change_image)
-        self.button.clicked.connect(self.show_save_dialog)
+        self.save_button.clicked.connect(self.show_save_dialog)
+        self.interval_edit.editingFinished.connect(self.change_interval)
+
 
     def change_scale(self, value):
         self.scale += value
@@ -49,9 +52,9 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
                     int(self.pixmap.height()*scale)
                 )
             )
-            self.label.setPixmap(scaled)
+            self.image_label.setPixmap(scaled)
         else:
-            self.label.setPixmap(self.pixmap)
+            self.image_label.setPixmap(self.pixmap)
 
     def choose_scale(self, pixmap, avail_geom, k_window, k_image):
         avail_width = avail_geom.width()
@@ -85,7 +88,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         self.scale_pixmap(scale)
         self.scale_edit.setText(f'{scale*100:.1f}')
         self.scale = scale
-        self.area.setWidget(self.label)
+        self.image_scroll_area.setWidget(self.image_label)
 
     def scale_pixmap_new(self, pixmap, scale):
         if scale != 1:
@@ -95,11 +98,13 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
                     int(pixmap.height()*scale)
                 )
             )
-            self.label.setPixmap(scaled)
+            self.image_label.setPixmap(scaled)
         else:
-            self.label.setPixmap(pixmap)
+            self.image_label.setPixmap(pixmap)
 
-    def load_images(self, filenames):
+    def show_slideshow(self, filenames):
+        self.interval_widget.setVisible(True)
+
         avail_geom = QGuiApplication.primaryScreen().availableSize()
         
         k_window = 0.9
@@ -115,23 +120,16 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             }
             self.images.append(temp)
         self.setGeometry(100, 100, int(avail_geom.width()*k_window), int(avail_geom.height()*k_window))
-        self.area.setWidget(self.label)
+        self.image_scroll_area.setWidget(self.image_label)
 
         self.scale_edit.setEnabled(False)
-        self.plus_button.setEnabled(False)
-        self.minus_button.setEnabled(False)
+        self.increase_scale_button.setEnabled(False)
+        self.decrease_scale_button.setEnabled(False)
 
-        self.period_label = QLabel(self)
-        self.period_label.setText('Period:')
-        self.period_edit = QLineEdit(self)
-        self.seconds_label = QLabel(self)
-        self.seconds_label.setText('s')
-        self.hbox.insertWidget(5, self.period_label)
-        self.hbox.insertWidget(6, self.period_edit)
-        self.hbox.insertWidget(7, self.seconds_label)
-        # self.hbox.addWidget()
+        self.timer_interval = 1000
         self.timer = QTimer(self)
-        self.timer.setInterval(1000)
+        self.timer.setInterval(self.timer_interval)
+        self.interval_edit.setText(f'{int(self.timer_interval/1000)}')
         self.image_number = 0
         self.timer.timeout.connect(lambda: self.show_images(self.images))
         self.timer.start()
@@ -142,9 +140,16 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         self.setWindowTitle(images[self.image_number]['path'])
         print(images[self.image_number]['path'])
         self.scale_pixmap_new(self.images[self.image_number]['pixmap'], self.images[self.image_number]['scale'])
-        # self.label.setPixmap(images[self.image_number]['pixmap'])
+        self.scale_edit.setText(f'{self.images[self.image_number]["scale"]*100:.1f}')
+        # self.image_label.setPixmap(images[self.image_number]['pixmap'])
         self.image_number += 1
             
+    def change_interval(self):
+        try:
+            interval = int(float(self.interval_edit.text())*1e3)
+            self.timer.setInterval(interval)
+        except ValueError:
+            self.interval_edit.setText(f'{int(self.timer_interval/1000)}')
 
     def change_image(self):
         try:
@@ -158,6 +163,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             self.scale_edit.setText(f'{scale*100:.1f}')
 
     def show_save_dialog(self):
+        self.interval_widget.setVisible(True)
         filename, ext = QFileDialog.getSaveFileName(
             self, 'Save file', '.', '*.png;;*.jpg;;*.bmp'
         )
@@ -179,15 +185,15 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         # if k_min_image >= 1.0:
         #     self.setGeometry(100, 100, int(self.pixmap.width()/k_image), int(self.pixmap.height()/k_image))
         #     self.scale_edit.setText('100.0')
-        #     self.label.setPixmap(self.pixmap)
+        #     self.image_label.setPixmap(self.pixmap)
         #     self.scale = 1
         # else:
         #     self.setGeometry(100, 100, int(init_window_width), int(init_window_height))
         #     scaled = self.pixmap.scaled(QSize(int(self.pixmap.width()*k_min_image), int(self.pixmap.height()*k_min_image)))
         #     self.scale_edit.setText(f'{k_min_image*100:.1f}')
-        #     self.label.setPixmap(scaled)
+        #     self.image_label.setPixmap(scaled)
         #     self.scale = k_min_image
-        # self.area.setWidget(self.label)
+        # self.image_scroll_area.setWidget(self.image_label)
 
     # def change_scale(self, value):
     #     try:
@@ -234,7 +240,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     #     try:
     #         scale = float(self.scale_edit.text())/100.0
     #         scaled = self.pixmap.scaled(QSize(int(self.pixmap.width()*scale), int(self.pixmap.height()*scale)))
-    #         self.label.setPixmap(scaled)
+    #         self.image_label.setPixmap(scaled)
     #         self.scale = scale
     #     except ValueError:
     #         scale = self.scale
@@ -254,26 +260,25 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     #     new_filename = f'{filename}.{ext[2:]}' 
     #     print(new_filename)
     #     self.pixmap.save(new_filename, quality=-1)
-    #     # self.label.resize(600, 600)
+    #     # self.image_label.resize(600, 600)
 
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = ChildWindow()
-    # main_window.load_images(
-    #     [
-    #         './colormap_beam.png',
-    #         './colormap_big.png',
-    #         './grayscale_test.png'
-    #     ]
-    # )
-    main_window.load_images(
+    main_window.show_slideshow(
         [
-            './image1.jpg',
-            './image2.png',
+            './colormap_beam.png',
+            './colormap_big.png',
             './grayscale_test.png'
         ]
     )
+    # main_window.show_slideshow(
+    #     [
+    #         './image1.jpg',
+    #         './image2.png',
+    #         './grayscale_test.png'
+    #     ]
+    # )
     main_window.show()
-    main_window.label.setGeometry(0,0, 400, 400)
     sys.exit(app.exec())

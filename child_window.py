@@ -75,7 +75,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         avail_geom = QGuiApplication.primaryScreen().availableSize()
         
         k_window = 0.9
-        k_image = 0.93
+        k_image = 0.9
 
         scale = self.choose_scale(self.pixmap, avail_geom, k_window, k_image)
         if scale == 1.0:
@@ -103,7 +103,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         avail_geom = QGuiApplication.primaryScreen().availableSize()
         
         k_window = 0.9
-        k_image = 0.93
+        k_image = 0.9
 
         self.images = []
         for f in filenames:
@@ -260,12 +260,20 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = ChildWindow()
+    # main_window.load_images(
+    #     [
+    #         './colormap_beam.png',
+    #         './colormap_big.png',
+    #         './grayscale_test.png'
+    #     ]
+    # )
     main_window.load_images(
         [
-            './colormap_beam.png',
-            './colormap_big.png',
+            './image1.jpg',
+            './image2.png',
             './grayscale_test.png'
         ]
     )
     main_window.show()
+    main_window.label.setGeometry(0,0, 400, 400)
     sys.exit(app.exec())

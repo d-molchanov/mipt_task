@@ -13,9 +13,8 @@ from PyQt6.QtWidgets import QTabWidget
 from PyQt6.QtWidgets import QScrollArea
 from PyQt6.QtWidgets import QCheckBox
 
-
 from PyQt6.QtGui import QAction, QIcon, QPixmap, QGuiApplication
-from PyQt6.QtCore import Qt, QSize, QTimer
+from PyQt6.QtCore import Qt, QTimer
 
 from child_window_design import ChildWindowDesign
 
@@ -47,10 +46,8 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     def scale_pixmap(self, scale):
         if scale != 1:
             scaled = self.pixmap.scaled(
-                QSize(
-                    int(self.pixmap.width()*scale),
-                    int(self.pixmap.height()*scale)
-                )
+                int(self.pixmap.width()*scale),
+                int(self.pixmap.height()*scale)
             )
             self.image_label.setPixmap(scaled)
         else:
@@ -93,10 +90,8 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     def scale_pixmap_new(self, pixmap, scale):
         if scale != 1:
             scaled = pixmap.scaled(
-                QSize(
-                    int(pixmap.width()*scale),
-                    int(pixmap.height()*scale)
-                )
+                int(pixmap.width()*scale),
+                int(pixmap.height()*scale)
             )
             self.image_label.setPixmap(scaled)
         else:
@@ -266,13 +261,14 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
     main_window = ChildWindow()
-    main_window.show_slideshow(
-        [
-            './colormap_beam.png',
-            './colormap_big.png',
-            './grayscale_test.png'
-        ]
-    )
+    main_window.load_image('./grayscale_test.png')
+    # main_window.show_slideshow(
+    #     [
+    #         './colormap_beam.png',
+    #         './colormap_big.png',
+    #         './grayscale_test.png'
+    #     ]
+    # )
     # main_window.show_slideshow(
     #     [
     #         './image1.jpg',

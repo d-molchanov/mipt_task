@@ -102,7 +102,7 @@ class ImageMaker:
             image = Image.fromarray(rgb_data)
             # k = 0.5
             # image = image.resize((int(image.width * k), int(image.height*k)))
-            return image
+            # return image
         # print(image.mode, type(image), image)
         return ImageQt(image)
 
@@ -173,19 +173,19 @@ def main():
     k = 2
     tst = perf_counter()
     image_csv_new = image_csv.resize((int(image_csv.width * k), int(image_csv.height*k)))
-    print(perf_counter() - tst)
+    print('Resize pil.image from csv:', perf_counter() - tst, image_csv_new)
     tst = perf_counter()
     image_file_new = image_file.resize((int(image_file.width * k), int(image_file.height*k)))
-    print(image_file_new, perf_counter() - tst)
+    print('Resize pil.image from png:', perf_counter() - tst, image_file_new)
     qimage_scv = ImageQt(image_csv)
     tst = perf_counter()
     qimage_scv_new = qimage_scv.scaled(int(image_file.width * k), int(image_file.height*k))
-    print(qimage_scv_new, qimage_scv_new.size(), perf_counter() - tst)
+    print('Resize QImage from csv:', perf_counter() - tst, qimage_scv_new, qimage_scv_new.size())
 
     tst = perf_counter()
     qimage_file = ImageQt(image_file)
     qimage_file_new = qimage_file.scaled(int(image_file.width * k), int(image_file.height*k))
-    print(qimage_file_new, qimage_file_new.size(), perf_counter() - tst)
+    print('Resize QImage from png:', perf_counter() - tst, qimage_file_new, qimage_file_new.size())
 
     tst = perf_counter()
     qimage = QImage(ImageQt(image_csv))

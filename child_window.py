@@ -63,6 +63,22 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             pass
         self.scale_edit.setText(f'{self.scale*100:.1f}')
 
+    def scale_image(self, image, scale):
+        if scale != 1:
+            scaled = image.scaled(
+                int(image.width()*scale),
+                int(image.height()*scale),
+                transformMode=Qt.TransformationMode.FastTransformation
+            )
+            print(5)
+            return scaled
+            # self.image_label.setPixmap(QPixmap(scaled))
+            # print(6)
+        else:
+            # self.image_label.setPixmap(QPixmap(scaled))
+            return image
+        # print(self.image_label.pixmap().size())
+
     def scale_pixmap_new(self, pixmap, scale):
         print(scale, pixmap.width(), pixmap.height())
         if scale != 1:
@@ -71,14 +87,14 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
                 int(pixmap.height()*scale),
                 transformMode=Qt.TransformationMode.FastTransformation
             )
-            image = QImage(pixmap)
-            print(image)
-            pil_image = ImageQt.fromqimage(image)
-            print(pil_image)
-            image = image.scaledToWidth(
-                int(image.width()*scale),
-                mode=Qt.TransformationMode.FastTransformation
-            )
+            # image = QImage(pixmap)
+            # print(image)
+            # pil_image = ImageQt.fromqimage(image)
+            # print(pil_image)
+            # image = image.scaledToWidth(
+            #     int(image.width()*scale),
+            #     mode=Qt.TransformationMode.FastTransformation
+            # )
             print(5)
             # pixmap.resize(
             #     int(pixmap.width()*scale),
@@ -113,29 +129,40 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         self.setWindowTitle(image['path'])
         if image['mode'] == 'L':
             self.load_colormap_button.setVisible(True)
-        self.pixmap = image['pixmap']
+        # self.pixmap = image['pixmap']
         print(1)
+        # scale = self.choose_scale(
+        #     image['pixmap'],
+        #     width,
+        #     height,
+        #     self.window_scale_factor,
+        #     self.image_scale_factor
+        # )
         scale = self.choose_scale(
-            image['pixmap'],
+            image['image'],
             width,
             height,
             self.window_scale_factor,
             self.image_scale_factor
         )
-        print(2)
+        print(2, scale)
         image['scale'] = scale
         if scale == 1.0:
             self.resize(
-                int(self.pixmap.width()/self.image_scale_factor),
-                int(self.pixmap.height()/self.image_scale_factor)
+                int(image['image'].width()/self.image_scale_factor),
+                int(image['image'].height()/self.image_scale_factor)
             )
         else:
             self.resize(
                 int(width*self.window_scale_factor),
                 int(height*self.window_scale_factor)
             )
-        print(3)
-        self.scale_pixmap_new(self.pixmap, scale)
+        print(3, image['image'])
+        image['image'].save('without_scale.png')
+        print(4)
+        scaled = self.scale_image(image['image'], scale)
+        self.image_label.setPixmap(QPixmap(scaled))
+        # self.scale_pixmap_new(self.pixmap, scale)
         print(4)
         self.scale_edit.setText(f'{scale*100:.1f}')
         self.scale = scale
@@ -167,10 +194,10 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             # image = image.convertToFormat(QImage.Format.Format_RGB888, flags=Qt.ImageConversionFlag.ColorOnly)
             print(image)
             # image_new = QImage(image, image.size[0], image.size[1], QImage.Format_RGB888)
-            pixmap = QPixmap.fromImage(image)
-            print(pixmap)
+            # pixmap = QPixmap.fromImage(image)
+            # print(pixmap)
             # self.images.append({'path': f, 'pixmap': pixmap, 'mode': metadata['mode']})
-            self.images.append({'raw_data': raw_data, 'path': f, 'pixmap': pixmap, 'mode': metadata['mode']})
+            self.images.append({'raw_data': raw_data, 'path': f, 'image': image, 'mode': metadata['mode']})
 
     def disable_scale_controls(self) -> None:
         self.scale_edit.setEnabled(False)
@@ -284,9 +311,18 @@ if __name__ == '__main__':
         './task/attached_data/for_extra_task/beam_grayscale.csv',
         './task/attached_data/for_extra_task/beam_rgb.csv',
         './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv'
+        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
+        './task/attached_data/for_extra_task/test_rgb.csv'
     ]
-    main_window.load_raw_data([CSVs[5]])
-    main_window.show_single_image()
+    image_maker = ImageMaker()
+    raw_data = image_maker.read_file_new(CSVs[1], ';', 1)
+    image_csv = image_maker.create_image_new(raw_data, 'RGB')
+    qimage = QImage(image_csv)
+    qimage = qimage.scaled(5000, 5000)
+    print(qimage)
+    main_window.image_label.setPixmap(QPixmap(qimage))
+    main_window.image_scroll_area.setWidget(main_window.image_label)
+    # main_window.load_raw_data([CSVs[1]])
+    # main_window.show_single_image()
     main_window.show()
     sys.exit(app.exec())

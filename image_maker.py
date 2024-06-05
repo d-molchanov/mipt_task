@@ -1,24 +1,45 @@
 from typing import Optional
-
+from time import perf_counter
 import numpy as np
 import pandas as pd
 
 from PIL import Image
 from PIL.Image import Image as PilImage
+from PIL.ImageQt import ImageQt
 
+from PyQt6.QtGui import QImage, QPixmap
 
 class ImageMaker:
+    # def read_file(self, filename: str) -> Optional[np.ndarray]:
+    #     data = None
+    #     file_metadata = self.get_file_metadata(filename)
+    #     try:
+    #         with open(filename, 'r') as f:
+    #             # data = np.genfromtxt(
+    #             #     f, delimiter=';', dtype=None, encoding=None
+    #             # )
+    #             df = pd.read_csv(filename, sep=';', header=file_metadata['header'])
+    #             data = df.values
+    #     except FileNotFoundError:
+    #         print(f'File not found: {filename}')
+    #     except PermissionError:
+    #         print(f'Permission denied: {filename}')
+    #     except Exception as e:
+    #         print(f'Error with reading file {filename}: {e}')
+    #     return data
+
     def get_file_metadata(self, filename: str) -> Optional[str]:
         try:
             with open(filename, 'r') as f:
                 try:
-                    hash_symbol, file_type = f.readline().split()
+                    hash_symbol, mode = f.readline().split()
                 except ValueError:
-                    return {'file_type': 'grayscale', 'header': 0}
+                    return {'mode': 'L', 'header': 0}
                 if hash_symbol != '#':
-                    return {'file_type': 'grayscale', 'header': 0}
-                if file_type in {'grayscale', 'rgb'}:
-                    return {'file_type': file_type, 'header': 1}
+                    return {'mode': 'L', 'header': 0}
+                if mode in {'grayscale', 'rgb'}:
+                    substitution = {'grayscale': 'L', 'rgb': 'RGB'}
+                    return {'mode': substitution[mode], 'header': 1}
         except FileNotFoundError:
             print(f'File not found: {filename}')
         except PermissionError:
@@ -26,29 +47,11 @@ class ImageMaker:
         except Exception as e:
             print(f'Error with reading file {filename}: {e}')
 
-    def read_file(self, filename: str) -> Optional[np.ndarray]:
-        data = None
-        file_metadata = self.get_file_metadata(filename)
-        try:
-            with open(filename, 'r') as f:
-                # data = np.genfromtxt(
-                #     f, delimiter=';', dtype=None, encoding=None
-                # )
-                df = pd.read_csv(filename, sep=';', header=file_metadata['header'])
-                data = df.values
-        except FileNotFoundError:
-            print(f'File not found: {filename}')
-        except PermissionError:
-            print(f'Permission denied: {filename}')
-        except Exception as e:
-            print(f'Error with reading file {filename}: {e}')
-        return data
-
-    def read_file_new(self, filename: str, sep_: str) -> dict:
+    def read_file_new(self, filename: str, sep_: str, header_: int) -> dict:
         data = None
         try:
             with open(filename, 'r') as f:
-                df = pd.read_csv(filename, sep=sep_, header=None)
+                df = pd.read_csv(filename, sep=sep_, header=header_)
                 data = df.values
         except FileNotFoundError:
             print(f'File not found: {filename}')
@@ -73,7 +76,7 @@ class ImageMaker:
         image = Image.fromarray(data.astype(np.uint8), mode='P')
         palette = list(colormap.flat)
         image.putpalette(palette)
-        return image
+        return ImageQt(image)
 
 
     def create_grayscale_image(self, data: np.ndarray) -> PilImage:
@@ -86,6 +89,22 @@ class ImageMaker:
     def create_grayscale_image_new(self, data: np.ndarray) -> PilImage:
         image = Image.fromarray(data.astype(np.uint8), mode='L')
         return image
+
+    def create_image_new(self, data: np.ndarray, mode_: str) -> Optional[PilImage]:
+        if mode_ == 'L':
+            image = Image.fromarray(data.astype(np.uint8), mode=mode_)
+        if mode_ == 'RGB':
+            data_ = data.astype(np.uint32)
+            red = (data_ >> 16) & 0xFF
+            green = (data_ >> 8) & 0xFF
+            blue = data_ & 0xFF
+            rgb_data = np.stack((red, green, blue), axis=-1).astype(np.uint8)
+            image = Image.fromarray(rgb_data)
+            # k = 0.5
+            # image = image.resize((int(image.width * k), int(image.height*k)))
+            return image
+        # print(image.mode, type(image), image)
+        return ImageQt(image)
 
     def create_color_image(self, data: np.ndarray) -> PilImage:
         height = len(data)
@@ -136,17 +155,45 @@ def main():
     # FILENAME = './task/attached_data/for_main_task/atom.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
     # FILENAME = './task/attached_data/for_extra_task/atom_grayscale.csv'
-    FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
+    # FILENAME = './task/attached_data/for_extra_task/atom_rgb.csv'
     # FILENAME = './task/attached_data/for_extra_task/beam_rgb.csv'
+    FILENAME = './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv'
     # FILENAME = './task/attached_data/for_main_task/beam.csv'
     # FILENAME = './task/attached_data/for_main_task/big_pic-7680x4320.csv'
 
     COLORMAP_FILENAME = './task/attached_data/colormap/CET-R1.csv'
 
     image_maker = ImageMaker()
-    print(image_maker.get_file_metadata(FILENAME))
-    raw_data = image_maker.read_file(FILENAME)
-    raw_colormap_data = image_maker.read_file_new(COLORMAP_FILENAME, ',')
+    metadata = image_maker.get_file_metadata(FILENAME)
+    raw_data = image_maker.read_file_new(FILENAME, ';', metadata['header'])
+    image_csv = image_maker.create_image_new(raw_data, metadata['mode'])
+    # image_csv.save('color_test.png')
+    image_file = Image.open('color_test.png')
+    print(image_csv, image_file, sep='\n')
+    k = 2
+    tst = perf_counter()
+    image_csv_new = image_csv.resize((int(image_csv.width * k), int(image_csv.height*k)))
+    print(perf_counter() - tst)
+    tst = perf_counter()
+    image_file_new = image_file.resize((int(image_file.width * k), int(image_file.height*k)))
+    print(image_file_new, perf_counter() - tst)
+    qimage_scv = ImageQt(image_csv)
+    tst = perf_counter()
+    qimage_scv_new = qimage_scv.scaled(int(image_file.width * k), int(image_file.height*k))
+    print(qimage_scv_new, qimage_scv_new.size(), perf_counter() - tst)
+
+    tst = perf_counter()
+    qimage_file = ImageQt(image_file)
+    qimage_file_new = qimage_file.scaled(int(image_file.width * k), int(image_file.height*k))
+    print(qimage_file_new, qimage_file_new.size(), perf_counter() - tst)
+
+    tst = perf_counter()
+    qimage = QImage(ImageQt(image_csv))
+    pixmap = QPixmap(qimage)
+    pixmap.new = pixmap.scaled(int(image_file.width * k), int(image_file.height*k))
+    print(pixmap_new, pixmap_new.size(), perf_counter() - tst)
+
+    raw_colormap_data = image_maker.read_file_new(COLORMAP_FILENAME, ',', 0)
     print(raw_colormap_data[0])
     print(raw_data[0])
     # # color_image = image_maker.apply_colormap_new(raw_data, raw_colormap_data)

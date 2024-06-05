@@ -281,6 +281,76 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         pixmap = QPixmap.fromImage(color_image)
         self.scale_pixmap_new(pixmap, self.scale)
 
+    def test_method(self, filename):
+        image_maker = ImageMaker()
+        raw_data = image_maker.read_file_new(filename, ';', 1)
+        image_csv = image_maker.create_image_new(raw_data, 'RGB')
+        qimage = QImage(image_csv)
+        try:
+            self.images_data.append({'path': filename, 'qimage': qimage, 'raw_data': raw_data})
+        except AttributeError:
+            self.images_data = [{'path': filename, 'qimage': qimage, 'raw_data': raw_data}]
+
+        print(qimage, qimage.size(), self.images_data[-1]['qimage'], self.images_data[-1]['qimage'].size())
+        qimage = self.images_data[-1]['qimage'].scaled(int(qimage.width()*1), int(qimage.height()*1))
+        print(qimage, qimage.size(), self.images_data[-1]['qimage'], self.images_data[-1]['qimage'].size())
+        # qimage = self.qimage.scaled(int(qimage.width()*4), int(qimage.height()*4))
+        # qimage = self.qimage.scaledToWidth(int(qimage.width()*4))
+        self.image_label.setPixmap(QPixmap(qimage))
+        self.image_scroll_area.setWidget(main_window.image_label)
+
+    #===========================================================+++++++
+
+    def test_load_file(self, filename):
+        image_maker = ImageMaker()
+        raw_data = image_maker.read_file_new(filename, ';', 1)
+        image_csv = image_maker.create_image_new(raw_data, 'RGB')
+        qimage = QImage(image_csv)
+        qimage = qimage.convertToFormat(QImage.Format.Format_RGB888, flags=Qt.ImageConversionFlag.ColorOnly)
+        self.qimage = qimage
+        self.qfilename = filename
+        del qimage
+        qimage = self.qimage.scaled(int(self.qimage.width()*1), int(self.qimage.height()*1))
+        print(qimage, qimage.size(), self.qimage, self.qimage.size())
+        self.image_label.setPixmap(QPixmap(qimage))
+        self.image_scroll_area.setWidget(self.image_label)
+
+    def test_load_csv_file(self, filename):
+        image_maker = ImageMaker()
+        raw_data = image_maker.read_file_new(filename, ';', 1)
+        image_csv = image_maker.create_image_new(raw_data, 'RGB')
+        qimage = QImage(image_csv)
+        qimage = qimage.convertToFormat(QImage.Format.Format_RGB888, flags=Qt.ImageConversionFlag.ColorOnly)
+        self.qimage = qimage
+        self.qfilename = filename
+        del qimage
+
+    def test_scale_qimage(self, scale):
+        if scale != 1:
+            scaled_qimage = self.qimage.scaled(
+                int(self.qimage.width()*scale),
+                int(self.qimage.height()*scale),
+                transformMode=Qt.TransformationMode.FastTransformation
+            )
+            return scaled_qimage
+        else:
+            return self.qimage
+
+    def test_load_qimage_to_label(self, qimage):
+        pixmap = QPixmap.fromImage(qimage)
+        self.image_label.setPixmap(pixmap)
+        del pixmap
+
+    def test_load_csv_to_label(self, filename, scale):
+        self.test_load_csv_file(filename)
+        qimage = self.test_scale_qimage(scale)
+        self.test_load_qimage_to_label(qimage)
+        del qimage
+        self.image_scroll_area.setWidget(self.image_label)
+        self.resize(1200, 800)
+
+
+
 
 
 
@@ -314,14 +384,19 @@ if __name__ == '__main__':
         './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
         './task/attached_data/for_extra_task/test_rgb.csv'
     ]
-    image_maker = ImageMaker()
-    raw_data = image_maker.read_file_new(CSVs[1], ';', 1)
-    image_csv = image_maker.create_image_new(raw_data, 'RGB')
-    qimage = QImage(image_csv)
-    qimage = qimage.scaled(5000, 5000)
-    print(qimage)
-    main_window.image_label.setPixmap(QPixmap(qimage))
-    main_window.image_scroll_area.setWidget(main_window.image_label)
+
+    main_window.test_load_csv_to_label(CSVs[1], 0.5)
+    # main_window.test_method(CSVs[5])
+
+    # main_window.test_load_file(CSVs[5])
+    # image_maker = ImageMaker()
+    # raw_data = image_maker.read_file_new(CSVs[1], ';', 1)
+    # image_csv = image_maker.create_image_new(raw_data, 'RGB')
+    # qimage = QImage(image_csv)
+    # qimage = qimage.scaled(5000, 5000)
+    # print(qimage)
+    # main_window.image_label.setPixmap(QPixmap(qimage))
+    # main_window.image_scroll_area.setWidget(main_window.image_label)
     # main_window.load_raw_data([CSVs[1]])
     # main_window.show_single_image()
     main_window.show()

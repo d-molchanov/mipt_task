@@ -36,8 +36,27 @@ class MainWindow(QMainWindow, MainWindowDesign):
 
 
 if __name__ == '__main__':
+    CSVs_ = [
+        './task/attached_data/for_extra_task/test_rgb.csv',
+        './task/attached_data/for_extra_task/atom_rgb.csv',
+        './task/attached_data/for_extra_task/beam_rgb.csv',
+        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
+        './task/attached_data/for_extra_task/atom_grayscale.csv',
+        './task/attached_data/for_extra_task/beam_grayscale.csv',
+        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
+    ]
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
+    windows = []
+    for i in range(4):
+    # for filename in CSVs_[:4]:
+        filename = CSVs_[3]
+        print(filename)
+        child_window = ChildWindow()
+        # child_window.test_load_file(filename)
+        child_window.test_load_csv_to_label(filename, 4)
+        child_window.show()
+        windows.append(child_window)
     main_window.show()
     sys.exit(app.exec())

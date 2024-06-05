@@ -11,7 +11,6 @@ from PyQt6.QtCore import Qt
 class ChildWindowDesign(object):
 
     def __init__(self):
-
         self.init_gui()
 
     def init_gui(self):

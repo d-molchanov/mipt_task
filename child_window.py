@@ -1,5 +1,6 @@
 import sys
 import io
+import time
 from typing import List
 
 from PIL import ImageQt
@@ -28,6 +29,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
 
     def __init__(self):
         super().__init__()
+        self.show()
         
         self.timer = QTimer(self)
 
@@ -302,6 +304,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     #===========================================================+++++++
 
     def test_load_file(self, filename):
+        self.image_label.setText(f'Loading {filename}')
         image_maker = ImageMaker()
         raw_data = image_maker.read_file_new(filename, ';', 1)
         image_csv = image_maker.create_image_new(raw_data, 'RGB')
@@ -317,8 +320,11 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
 
     def test_load_csv_file(self, filename):
         image_maker = ImageMaker()
-        raw_data = image_maker.read_file_new(filename, ';', 1)
-        image_csv = image_maker.create_image_new(raw_data, 'RGB')
+        metadata = image_maker.get_file_metadata_new(filename)
+
+        raw_data = image_maker.read_csv_file(filename, ';', metadata['skiprows'])
+        image_csv = image_maker.create_imageqt(raw_data, metadata['mode'])
+        # image_csv = image_maker.create_image_new(raw_data, 'RGB')
         qimage = QImage(image_csv)
         qimage = qimage.convertToFormat(QImage.Format.Format_RGB888, flags=Qt.ImageConversionFlag.ColorOnly)
         self.qimage = qimage
@@ -353,7 +359,6 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
 
 
 
-
 if __name__ == '__main__':
 
     app = QApplication(sys.argv)
@@ -376,16 +381,23 @@ if __name__ == '__main__':
     #     ]
     # )
     CSVs = [
-        './task/attached_data/for_extra_task/atom_grayscale.csv',
-        './task/attached_data/for_extra_task/atom_rgb.csv',
-        './task/attached_data/for_extra_task/beam_grayscale.csv',
+        './task/attached_data/for_extra_task/test_rgb.csv',
         './task/attached_data/for_extra_task/beam_rgb.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv',
+        './task/attached_data/for_extra_task/atom_rgb.csv',
         './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
-        './task/attached_data/for_extra_task/test_rgb.csv'
+        './task/attached_data/for_extra_task/atom_grayscale.csv',
+        './task/attached_data/for_extra_task/beam_grayscale.csv',
+        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
     ]
+    # sys.exit(app.exec())
 
-    main_window.test_load_csv_to_label(CSVs[1], 0.5)
+    main_window.show()
+    print('Load window')
+    # time.sleep(1)
+    print('Timeout')
+    main_window.image_label.setText('Yo!')
+    main_window.test_load_csv_to_label(CSVs[1], 1)
+    main_window.image_scroll_area.setWidget(main_window.image_label)
     # main_window.test_method(CSVs[5])
 
     # main_window.test_load_file(CSVs[5])
@@ -399,5 +411,4 @@ if __name__ == '__main__':
     # main_window.image_scroll_area.setWidget(main_window.image_label)
     # main_window.load_raw_data([CSVs[1]])
     # main_window.show_single_image()
-    main_window.show()
     sys.exit(app.exec())

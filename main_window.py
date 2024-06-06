@@ -34,29 +34,34 @@ class MainWindow(QMainWindow, MainWindowDesign):
                 child_window.show()
                 self.child_windows.append(child_window)
 
+    def main(self):
+        CSVs_ = [
+            './task/attached_data/for_extra_task/test_rgb.csv',
+            './task/attached_data/for_extra_task/atom_rgb.csv',
+            './task/attached_data/for_extra_task/beam_rgb.csv',
+            './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
+            './task/attached_data/for_extra_task/atom_grayscale.csv',
+            './task/attached_data/for_extra_task/beam_grayscale.csv',
+            './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
+        ]
+        self.windows = []
+        for i in range(1):
+        # for filename in CSVs_[:4]:
+            filename = CSVs_[3]
+            print(filename)
+            child_window = ChildWindow()
+            child_window.show()
+            child_window.setWindowTitle(filename)
+            # child_window.test_load_file(filename)
+            child_window.test_load_csv_to_label(filename, 0.15)
+            self.windows.append(child_window)
+
 
 if __name__ == '__main__':
-    CSVs_ = [
-        './task/attached_data/for_extra_task/test_rgb.csv',
-        './task/attached_data/for_extra_task/atom_rgb.csv',
-        './task/attached_data/for_extra_task/beam_rgb.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
-        './task/attached_data/for_extra_task/atom_grayscale.csv',
-        './task/attached_data/for_extra_task/beam_grayscale.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
-    ]
+    
 
     app = QApplication(sys.argv)
     main_window = MainWindow()
-    windows = []
-    for i in range(4):
-    # for filename in CSVs_[:4]:
-        filename = CSVs_[3]
-        print(filename)
-        child_window = ChildWindow()
-        # child_window.test_load_file(filename)
-        child_window.test_load_csv_to_label(filename, 4)
-        child_window.show()
-        windows.append(child_window)
     main_window.show()
+    main_window.main()
     sys.exit(app.exec())

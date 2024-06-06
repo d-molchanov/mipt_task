@@ -1,5 +1,7 @@
 from typing import Optional
 from time import perf_counter
+import functools
+import logging
 import numpy as np
 import pandas as pd
 
@@ -8,6 +10,12 @@ from PIL.Image import Image as PilImage
 from PIL.ImageQt import ImageQt
 
 from PyQt6.QtGui import QImage, QPixmap
+
+logging.basicConfig(
+    # format='%(threadName)s %(name)s %(levelname)s: %(message)s',
+    format='%(asctime)s %(levelname)s:\t%(message)s',
+    level=logging.DEBUG
+)
 
 class ImageMaker:
     # def read_file(self, filename: str) -> Optional[np.ndarray]:
@@ -28,24 +36,7 @@ class ImageMaker:
     #         print(f'Error with reading file {filename}: {e}')
     #     return data
 
-    def get_file_metadata(self, filename: str) -> Optional[str]:
-        try:
-            with open(filename, 'r') as f:
-                try:
-                    hash_symbol, mode = f.readline().split()
-                except ValueError:
-                    return {'mode': 'L', 'header': 0}
-                if hash_symbol != '#':
-                    return {'mode': 'L', 'header': 0}
-                if mode in {'grayscale', 'rgb'}:
-                    substitution = {'grayscale': 'L', 'rgb': 'RGB'}
-                    return {'mode': substitution[mode], 'header': 1}
-        except FileNotFoundError:
-            print(f'File not found: {filename}')
-        except PermissionError:
-            print(f'Permission denied: {filename}')
-        except Exception as e:
-            print(f'Error with reading file {filename}: {e}')
+    
 
     def read_file_new(self, filename: str, sep_: str, header_: int) -> dict:
         data = None
@@ -150,6 +141,143 @@ class ImageMaker:
         # img.save('grayscale_test.png')
         # img.show()
 
+    def open_file(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            filename = args[1]
+            try:
+                return func(*args, **kwargs)
+            except FileNotFoundError:
+                logging.error(f'File not found: {filename}')
+            except PermissionError:
+                logging.error(f'Permission denied: {filename}')
+            except UnicodeDecodeError as e:
+                logging.error(f'Error with reading file {filename}: {e}')
+        return wrapper
+
+    def get_file_mode(self, line: str) -> dict:
+        try:
+            hash_symbol, mode = line.split()
+        except ValueError:
+            return {'mode': 'L', 'header': 0}
+        if hash_symbol != '#':
+            return {'mode': 'L', 'header': 0}
+        if mode in {'grayscale', 'rgb'}:
+            substitution = {'grayscale': 'L', 'rgb': 'RGB'}
+            return {'mode': substitution[mode], 'header': 1}
+
+    @open_file
+    def get_file_metadata_new(self, filename: str) -> Optional[dict]:
+        with open(filename, 'r') as f:
+            return self.get_file_mode(f.readline())
+
+    @open_file
+    def read_csv_file(self, filename: str, sep_, header_) -> Optional[np.ndarray]:
+        data = None
+        with open(filename, 'r') as f:
+            try:
+                time_start = perf_counter()
+                logging.info(f'{filename}: start reading.')
+                df = pd.read_csv(filename, sep=sep_, header=header_)
+                data = df.values
+                time_stop = f'{(perf_counter() - time_start)*1e3:.2f}.'
+                logging.info(
+                    f'{filename} was read successfully in {time_stop} ms.'
+                )
+            except pd.errors.EmptyDataError as e:
+                logging.error(f'{e}')
+            except pd.errors.ParserError as e:
+                logging.error(f'{e}')
+        return data
+
+    def get_data_for_rgb_image(self, data: np.ndarray):
+        red = (data >> 16) & 0xFF
+        green = (data >> 8) & 0xFF
+        blue = data & 0xFF
+        return np.stack((red, green, blue), axis=-1).astype(np.uint8)
+
+    def create_imageqt(self, data: np.ndarray, mode_: str) -> Optional[ImageQt]:
+        image_data = None
+        image = None
+        time_start = perf_counter()
+        logging.info('ImageQt creation was started.')
+        try:
+            if mode_ == 'L':
+                image_data = data.astype(np.uint8)
+            if mode_ == 'RGB':
+                image_data = self.get_data_for_rgb_image(
+                    data.astype(np.uint32)
+                )
+        except ValueError as e:
+            logging.error(f'{e}')
+        except AttributeError as e:
+            logging.error(f'{e}')
+        try:    
+            image = Image.fromarray(image_data, mode=mode_)
+        except Exception as e:
+            logging.error(f'{e}')
+        time_stop = f'{(perf_counter() - time_start)*1e3:.2f}.'
+        logging.info(
+            f'ImageQt was created in {time_stop} ms.'
+        )
+        return image
+        # if mode_ == 'L':
+        #     try:
+        #         image = Image.fromarray(data.astype(np.uint8), mode=mode_)
+        #     except ValueError as e:
+        #         logging.error(f'{e}')
+        #     except AttributeError as e:
+        #         logging.error(f'{e}')
+        # if mode_ == 'RGB':
+        #     data_ = data.astype(np.uint32)
+        #     red = (data_ >> 16) & 0xFF
+        #     green = (data_ >> 8) & 0xFF
+        #     blue = data_ & 0xFF
+        #     rgb_data = np.stack((red, green, blue), axis=-1).astype(np.uint8)
+        #     image = Image.fromarray(rgb_data, mode=mode_)
+        # # return ImageQt(image)
+        # return image
+
+def test():
+    FILENAMES = [
+        './task/attached_data/for_extra_task/test_rgb.csv',
+        './task/attached_data/for_extra_task/beam_rgb.csv',
+        './task/attached_data/for_extra_task/atom_rgb.csv',
+        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
+        './task/attached_data/for_extra_task/atom_grayscale.csv',
+        './task/attached_data/for_extra_task/beam_grayscale.csv',
+        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv',
+        './task/attached_data/colormap/CET-R1.csv'
+    ]
+    TEST_SCV = [
+        './test_cases/different_separator.csv',
+        './test_cases/empty.csv',
+        './test_cases/grayscale.csv',
+        './test_cases/grayscale_with_wrong_header.csv',
+        './test_cases/not_csv.csv',
+        './test_cases/not_rectangular.csv',
+        './test_cases/not_exists.csv',
+        './test_cases/permission_denied.csv',
+        './test_cases/rgb.csv',
+        './test_cases/rgb_without_header.csv',
+        './test_cases/rgb_with_wrong_header.csv'
+
+    ]
+    filename = FILENAMES[-1]
+    image_maker = ImageMaker()
+    # data = image_maker.get_file_metadata(filename)
+    # print(data)
+    # for i, filename in enumerate(FILENAMES[:-1]):
+    for i, filename in enumerate(TEST_SCV):
+        print(f'\n{i+1}. Parsing {filename}')
+        metadata = image_maker.get_file_metadata_new(filename)
+        if metadata:
+            raw_data = image_maker.read_csv_file(filename, ';', metadata['header'])
+            logging.debug(f'{filename}\n<{raw_data}>')
+            imageqt = image_maker.create_imageqt(raw_data, metadata['mode'])
+            if imageqt:
+                # imageqt.save(f'{filename[:-4]}.png')
+                pass
 
 def main():
     # FILENAME = './task/attached_data/for_main_task/atom.csv'
@@ -212,4 +340,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    # main()
+    test()

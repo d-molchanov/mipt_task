@@ -1,9 +1,9 @@
 """Module contains class ImageMaker for reading
-csv-files and QImage objects creation
+csv-files and creating QImage-objects
 """
 
 import os
-from typing import Optional
+from typing import Optional, Callable, Union
 from time import perf_counter
 import functools
 import logging
@@ -16,6 +16,7 @@ from PIL.ImageQt import ImageQt
 
 from PyQt6.QtGui import QImage
 
+
 logging.basicConfig(
     format='%(asctime)s %(levelname)s:\t%(message)s',
     level=logging.INFO
@@ -27,7 +28,7 @@ class ImageMaker:
     QImage-objects
     """
 
-    def open_file(func):
+    def open_file(func: Callable) -> Optional[Union[dict, np.ndarray]]:
         """Decorator for save file opening
         """
         @functools.wraps(func)
@@ -37,10 +38,13 @@ class ImageMaker:
                 return func(*args, **kwargs)
             except FileNotFoundError:
                 logging.error('File not found: %s.', filename)
+                return None
             except PermissionError:
                 logging.error('Permission denied: %s.', filename)
+                return None
             except UnicodeDecodeError as e:
                 logging.error('Error with reading file %s: %s.', filename, e)
+                return None
         return wrapper
 
     def _get_file_mode(self, line: str) -> dict:
@@ -56,8 +60,7 @@ class ImageMaker:
                     'skiprows': 1
                 }
             return {'mode': None, 'skiprows': None}
-        else:
-            return {'mode': 'L', 'skiprows': 0}
+        return {'mode': 'L', 'skiprows': 0}
 
     @open_file
     def get_file_metadata(self, filename: str) -> Optional[dict]:
@@ -91,19 +94,31 @@ class ImageMaker:
             except pd.errors.EmptyDataError as e:
                 logging.error('Check %s: %s.', filename, e)
             except pd.errors.ParserError as e:
-                logging.error('!%s', e)
+                logging.error('Check %s: %s.', filename, e)
         return data
 
-    def get_data_for_rgb_image(self, data: np.ndarray):
-        """!Method for convert 24bit-integer ndarray to rgb-image """
+    def get_data_for_rgb_image(self, data: np.ndarray) -> np.ndarray:
+        """Method for converting a 24-bit integer NumPy array to RGB image"""
         red = (data >> 16) & 0xFF
         green = (data >> 8) & 0xFF
         blue = data & 0xFF
         return np.stack((red, green, blue), axis=-1).astype(np.uint8)
 
-    def create_imageqt(
+    def convert_to_qimage(self, pilimage, format_: str) -> Optional[QImage]:
+        """Method for converting PIL.Image object to QImage object"""
+        if format_ == 'RGB':
+            return QImage(pilimage).convertToFormat(
+                QImage.Format.Format_RGB888,
+            )
+        if format_ == 'L':
+            return QImage(pilimage).convertToFormat(
+                QImage.Format.Format_Grayscale8
+            )
+        return None
+
+    def create_qimage(
         self, data: Optional[np.ndarray], mode_: str
-    ) -> Optional[ImageQt]:
+    ) -> Optional[QImage]:
         """Method for QImage-object creation"""
         if data is None:
             return None
@@ -131,12 +146,13 @@ class ImageMaker:
             logging.info('ImageQt object was created in %s ms.', time_stop)
         except AttributeError:
             logging.error('ImageQt object cannot be created.')
-        return ImageQt(image)
-        # return image
+        if mode_:
+            return self.convert_to_qimage(ImageQt(image), mode_)
+        return None
 
     def apply_colormap(
         self, data: np.ndarray, colormap: np.ndarray
-    ) -> PilImage:
+    ) -> Optional[QImage]:
         """Method for colormap appling on grayscale image"""
         try:
             image = Image.fromarray(data.astype(np.uint8), mode='P')
@@ -146,65 +162,43 @@ class ImageMaker:
             )
         palette = list(colormap.flat)
         image.putpalette(palette)
-        return ImageQt(image)
+        return self.convert_to_qimage(ImageQt(image), 'RGB')
 
     def save_image(self, image: PilImage, filename: str) -> None:
         """Method for saving QImage-object to the file"""
-        try:
-            image.save(filename)
+        is_saved = image.save(filename)
+        if is_saved:
             logging.info('Image was saved to file: %s', filename)
-        except ValueError:
-            logging.error(
-                'Image type is unknown. Please, check file extention: %s',
-                filename
-            )
-        except IOError:
-            logging.error('Cannot write to file: %s.', filename)
+        else:
+            logging.error('Cannot save image to file %s', filename)
 
 
 def test():
-    FILENAMES = [
-        './task/attached_data/for_extra_task/test_rgb.csv',
-        './task/attached_data/for_extra_task/beam_rgb.csv',
-        './task/attached_data/for_extra_task/atom_rgb.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
-        './task/attached_data/for_extra_task/atom_grayscale.csv',
-        './task/attached_data/for_extra_task/beam_grayscale.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv',
-        './task/attached_data/colormap/CET-R1.csv'
-    ]
-    TEST_SCV = [
+    """Function for testing ImageMaker class methods"""
+    test_files = [
         './test_cases/grayscale_with_wrong_header.csv',
-        './test_cases/rgb.csv',
+        './test_cases/atom_rgb.csv',
         './test_cases/rgb_with_wrong_header.csv',
         './test_cases/rgb_without_header.csv',
         './test_cases/permission_denied.csv',
         './test_cases/not_exists.csv',
         './test_cases/not_rectangular.csv',
         './test_cases/not_csv.csv',
-        './test_cases/grayscale.csv',
+        './test_cases/atom_grayscale.csv',
         './test_cases/empty.csv',
         './test_cases/different_separator.csv'
 
     ]
-    filename = FILENAMES[-1]
     image_maker = ImageMaker()
-    # data = image_maker.get_file_metadata(filename)
-    # print(data)
-    # for i, filename in enumerate(FILENAMES[2:3]):
-    for i, filename in enumerate(TEST_SCV[1:2]):
-        # print(f'\n{i+1}. Parsing %(filename)s')
+    for filename in test_files:
         metadata = image_maker.get_file_metadata(filename)
         if metadata:
             raw_data = image_maker.read_csv_file(
-                # filename, ';', metadata['skiprows']
                 os.path.abspath(filename), ';', metadata['skiprows']
             )
-            # logging.debug(f'Raw data:\n{raw_data}')
-            imageqt = image_maker.create_imageqt(raw_data, metadata['mode'])
-            if imageqt:
-                image_maker.save_image(imageqt, f'{filename[:-4]}.png')
-                pass
+            qimage = image_maker.create_qimage(raw_data, metadata['mode'])
+            if qimage:
+                image_maker.save_image(qimage, f'{filename[:-4]}.png')
 
 
 if __name__ == '__main__':

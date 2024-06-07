@@ -154,11 +154,11 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             self, 'Open colormap', '.', '*.csv *.txt')
         if filename:
             image_maker = ImageMaker()
-            metadata = image_maker.get_file_metadata_new(filename)
+            metadata = image_maker.get_file_metadata(filename)
             colormap = image_maker.read_csv_file(
                 filename, ',', metadata['skiprows']
             )
-            color_qimage = image_maker.apply_colormap_new(
+            color_qimage = image_maker.apply_colormap(
                 self.images_data[self.active_image]['raw_data'], colormap
                 )
             self.images_data[self.active_image]['image'] = color_qimage
@@ -177,7 +177,7 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
     def load_csv_files(self, filenames: List[str]) -> None:
         image_maker = ImageMaker()
         for f in filenames:
-            metadata = image_maker.get_file_metadata_new(f)
+            metadata = image_maker.get_file_metadata(f)
             raw_data = image_maker.read_csv_file(f, ';', metadata['skiprows'])
             imageqt = image_maker.create_imageqt(raw_data, metadata['mode'])
             self.images_data.append(

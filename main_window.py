@@ -19,7 +19,9 @@ class MainWindow(QMainWindow, MainWindowDesign):
         self.child_windows.append(child_window)
 
     def show_open_dialog(self):
-        filenames = QFileDialog.getOpenFileNames(self, 'Open file', './task/attached_data/for_extra_task', '*.csv *.txt')[0]
+        filenames = QFileDialog.getOpenFileNames(
+            self, 'Open file', '.', '*.csv *.txt'
+        )[0]
         if filenames:
             if self.slideshow_checkbox.isChecked():
                 child_window = ChildWindow()
@@ -47,7 +49,7 @@ class MainWindow(QMainWindow, MainWindowDesign):
         ]
         self.windows = []
         # for i in range(1):
-        for filename in CSVs_[:4]:
+        for filename in CSVs_[:3]:
             # filename = CSVs_[3]
             print(filename)
             child_window = ChildWindow()

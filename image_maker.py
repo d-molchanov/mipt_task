@@ -43,7 +43,7 @@ class ImageMaker:
                 logging.error('Error with reading file %s: %s.', filename, e)
         return wrapper
 
-    def get_file_mode_new(self, line: str) -> dict:
+    def _get_file_mode(self, line: str) -> dict:
         """Method for determine type of image, which
         is contained in csv-file
         """
@@ -60,12 +60,12 @@ class ImageMaker:
             return {'mode': 'L', 'skiprows': 0}
 
     @open_file
-    def get_file_metadata_new(self, filename: str) -> Optional[dict]:
+    def get_file_metadata(self, filename: str) -> Optional[dict]:
         """Method for obtain metadata of image from csv-file:
         image type and header presents
         """
         with open(filename, 'r') as f:
-            return self.get_file_mode_new(f.readline())
+            return self._get_file_mode(f.readline())
 
     @open_file
     def read_csv_file(
@@ -134,7 +134,7 @@ class ImageMaker:
         return ImageQt(image)
         # return image
 
-    def apply_colormap_new(
+    def apply_colormap(
         self, data: np.ndarray, colormap: np.ndarray
     ) -> PilImage:
         """Method for colormap appling on grayscale image"""
@@ -194,7 +194,7 @@ def test():
     # for i, filename in enumerate(FILENAMES[2:3]):
     for i, filename in enumerate(TEST_SCV[1:2]):
         # print(f'\n{i+1}. Parsing %(filename)s')
-        metadata = image_maker.get_file_metadata_new(filename)
+        metadata = image_maker.get_file_metadata(filename)
         if metadata:
             raw_data = image_maker.read_csv_file(
                 # filename, ';', metadata['skiprows']

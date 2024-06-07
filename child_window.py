@@ -1,7 +1,8 @@
 """Module contains class ChildWindow for creating child windows"""
 import sys
 from time import perf_counter
-from typing import List, Tuple
+from typing import List
+from typing import Tuple
 
 import logging
 

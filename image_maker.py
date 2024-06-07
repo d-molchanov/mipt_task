@@ -1,12 +1,14 @@
 """Module contains class ImageMaker for reading
 csv-files and creating QImage-objects
 """
-
 import os
-from typing import Optional, Callable, Union
+from typing import Optional
+from typing import Callable
+from typing import Union
 from time import perf_counter
 import functools
 import logging
+
 import numpy as np
 import pandas as pd
 

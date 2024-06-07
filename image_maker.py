@@ -238,7 +238,7 @@ class ImageMaker:
     def save_image(self, image: PilImage, filename: str) -> None:
         try:
             image.save(filename)
-            logging.info(f'Image was saved to file {filename}')
+            logging.info(f'Image was saved to file: {filename}')
         except ValueError:
             logging.error(f'Image type is unknown. Please, check file extention: {filename}')
         except IOError:

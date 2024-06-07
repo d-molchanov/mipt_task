@@ -20,19 +20,20 @@ class MainWindow(QMainWindow, MainWindowDesign):
 
     def show_open_dialog(self):
         filenames = QFileDialog.getOpenFileNames(self, 'Open file', './task/attached_data/for_extra_task', '*.csv *.txt')[0]
-        if self.slideshow_checkbox.isChecked():
-            child_window = ChildWindow()
-            child_window.load_raw_data(filenames)
-            child_window.show_slideshow()
-            child_window.show()
-            self.child_windows.append(child_window)
-        else:
-            for f in filenames:
+        if filenames:
+            if self.slideshow_checkbox.isChecked():
                 child_window = ChildWindow()
-                child_window.load_raw_data([f])
-                child_window.show_single_image()
+                child_window.load_csv_files(filenames)
+                child_window.show_slideshow()
                 child_window.show()
                 self.child_windows.append(child_window)
+            else:
+                for f in filenames:
+                    child_window = ChildWindow()
+                    child_window.load_csv_files([f])
+                    child_window.show_single_image_new(0)
+                    child_window.show()
+                    self.child_windows.append(child_window)
 
     def main(self):
         CSVs_ = [
@@ -45,15 +46,18 @@ class MainWindow(QMainWindow, MainWindowDesign):
             './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
         ]
         self.windows = []
-        for i in range(1):
-        # for filename in CSVs_[:4]:
-            filename = CSVs_[3]
+        # for i in range(1):
+        for filename in CSVs_[:4]:
+            # filename = CSVs_[3]
             print(filename)
             child_window = ChildWindow()
-            child_window.show()
-            child_window.setWindowTitle(filename)
+            child_window.load_csv_files([filename])
+            child_window.show_single_image_new(0)
+
+            # child_window.show()
+            # child_window.setWindowTitle(filename)
             # child_window.test_load_file(filename)
-            child_window.test_load_csv_to_label(filename, 0.15)
+            # child_window.test_load_csv_to_label(filename, 0.15)
             self.windows.append(child_window)
 
 

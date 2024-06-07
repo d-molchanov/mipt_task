@@ -1,3 +1,6 @@
+"""Module contains class ChildWindowDesign which defines
+design of child windows
+"""
 from PyQt6.QtWidgets import QVBoxLayout
 from PyQt6.QtWidgets import QHBoxLayout
 from PyQt6.QtWidgets import QWidget
@@ -8,13 +11,14 @@ from PyQt6.QtWidgets import QScrollArea
 
 from PyQt6.QtCore import Qt
 
-class ChildWindowDesign(object):
 
+class ChildWindowDesign:
+    """Class defines design of child windows"""
     def __init__(self):
         self.init_gui()
 
     def init_gui(self):
-
+        """Method for initializing graphic user interface"""
         self.save_button = QPushButton('Save as', self)
         self.decrease_scale_button = QPushButton('-', self)
         self.decrease_scale_button.setFixedSize(24, 24)
@@ -62,5 +66,3 @@ class ChildWindowDesign(object):
         container.setLayout(layout)
 
         self.setCentralWidget(container)
-        
-        # self.show()

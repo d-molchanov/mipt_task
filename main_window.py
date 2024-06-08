@@ -24,9 +24,10 @@ class MainWindow(QMainWindow, MainWindowDesign):
         for f in filenames:
             child_window = ChildWindow()
             child_window.load_csv_files([f])
-            child_window.show_single_image(0)
-            child_window.show()
-            self.child_windows.append(child_window)
+            if child_window.get_single_image(0):
+                child_window.show_single_image(0)
+                child_window.show()
+                self.child_windows.append(child_window)
 
     def create_slideshow_window(self, filenames: List[str]) -> None:
         """Method for creating slideshow window"""
@@ -51,17 +52,22 @@ class MainWindow(QMainWindow, MainWindowDesign):
 def test() -> None:
     """Function for testing MainWindow class methods"""
     test_files = [
-        './task/attached_data/for_extra_task/test_rgb.csv',
-        './task/attached_data/for_extra_task/atom_rgb.csv',
-        './task/attached_data/for_extra_task/beam_rgb.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
-        './task/attached_data/for_extra_task/atom_grayscale.csv',
-        './task/attached_data/for_extra_task/beam_grayscale.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
+        './test_cases/grayscale_with_wrong_header.csv',
+        './test_cases/atom_rgb.csv',
+        './test_cases/rgb_with_wrong_header.csv',
+        './test_cases/rgb_without_header.csv',
+        './test_cases/permission_denied.csv',
+        './test_cases/not_exists.csv',
+        './test_cases/not_rectangular.csv',
+        './test_cases/not_csv.csv',
+        './test_cases/atom_grayscale.csv',
+        './test_cases/empty.csv',
+        './test_cases/different_separator.csv'
+
     ]
     main_window = MainWindow()
-    main_window.create_slideshow_window(test_files[:3])
-    main_window.create_child_windows(test_files[:3])
+    main_window.create_slideshow_window(test_files)
+    main_window.create_child_windows(test_files)
     main_window.show()
 
 

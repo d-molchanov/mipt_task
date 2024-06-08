@@ -3,6 +3,7 @@ import sys
 from time import perf_counter
 from typing import List
 from typing import Tuple
+from typing import Optional
 
 import logging
 
@@ -244,11 +245,20 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
             scale = k_min_image
         return scale
 
+    def get_single_image(self, image_number: int) -> Optional[QImage]:
+        """Method for getting single image from self._images_data by number"""
+        if not self._images_data:
+            return None
+        if image_number > len(self._images_data) - 1:
+            return None
+        return self._images_data[image_number]['image']
+
     def show_single_image(self, image_number: int) -> None:
         """Method for showing single image"""
         if not self._images_data:
+            # self.image_label.setText('No data to show')
             return None
-        if image_number > len(self._images_data):
+        if image_number > len(self._images_data) - 1:
             return None
         width, height = self._get_available_screen_size()
         entry = self._images_data[image_number]
@@ -293,15 +303,6 @@ def test() -> None:
     """Function for testing ChildWindow class methods"""
     app = QApplication(sys.argv)
     main_window = ChildWindow()
-    test_files = [
-        './task/attached_data/for_extra_task/atom_grayscale.csv',
-        './task/attached_data/for_extra_task/atom_rgb.csv',
-        './task/attached_data/for_extra_task/test_rgb.csv',
-        './task/attached_data/for_extra_task/beam_rgb.csv',
-        './task/attached_data/for_extra_task/beam_grayscale.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_rgb.csv',
-        './task/attached_data/for_extra_task/big_pic-7680x4320_grayscale.csv'
-    ]
     test_files = [
         './test_cases/grayscale_with_wrong_header.csv',
         './test_cases/atom_rgb.csv',

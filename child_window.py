@@ -289,7 +289,9 @@ class ChildWindow(QMainWindow, ChildWindowDesign):
         self.scale_edit.setText(f'{scale*100:.1f}')
         self.image_scroll_area.setWidget(self.image_label)
 
-    def scale_qimage_to_label(self, qimage: QImage, scale: float, label: QLabel) -> None:
+    def scale_qimage_to_label(
+        self, qimage: QImage, scale: float, label: QLabel
+    ) -> None:
         """Method for scaling QImage-object and loading it to QLabel-object"""
         scaled_qimage = self.scale_qimage(qimage, scale)
         self.load_qimage_to_label(scaled_qimage, label)
